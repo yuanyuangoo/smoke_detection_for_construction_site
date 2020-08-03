@@ -1,22 +1,25 @@
 import sys
 sys.path.append(".\yolov5")
 from subprocess import Popen
-from yolov5.utils.utils import *
-from yolov5.models import *  # set ONNX_EXPORT in models.py
-from yolov5.utils.datasets import *
 
 from additional import *
 import torch
 from sys import platform
 from argparse import ArgumentParser
-from yolov5.models.experimental import *
+import shutil
+from pathlib import Path
+
+from yolov5.models.experimental import attempt_load
+from yolov5.utils.datasets import LoadStreams
+from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box
+from yolov5.utils.torch_utils import select_device
 
 def detect(save_img=False):
     out, source, weights, view_img, save_txt, imgsz = \
         opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
-    device = torch_utils.select_device(opt.device)
+    device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
     # Initialize
     if os.path.exists(out):
