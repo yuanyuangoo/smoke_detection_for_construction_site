@@ -11,7 +11,7 @@ from pathlib import Path
 
 from yolov5.models.experimental import attempt_load
 from yolov5.utils.datasets import LoadStreams
-from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box
+from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box, strip_optimizer
 from yolov5.utils.torch_utils import select_device
 
 def detect(save_img=False):
@@ -209,7 +209,7 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weights/best_39.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='weights/best.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='video.txt', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='./output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=512, help='inference size (pixels)')
