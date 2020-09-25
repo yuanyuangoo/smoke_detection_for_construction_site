@@ -1,7 +1,7 @@
 import sys
-sys.path.append(".\yolov5")
-from subprocess import Popen
+sys.path.append("./yolov5")
 
+from subprocess import Popen
 from additional import *
 import torch
 from sys import platform
@@ -13,7 +13,6 @@ from yolov5.models.experimental import attempt_load
 from yolov5.utils.datasets import LoadStreams
 from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box, strip_optimizer
 from yolov5.utils.torch_utils import select_device
-
 
 
 
@@ -217,7 +216,7 @@ if __name__ == '__main__':
     parser.add_argument('--source', type=str, default='video.txt', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='./output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=512, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.1, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.2, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.2, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', default=True, action='store_true', help='half precision FP16 inference')

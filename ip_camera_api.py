@@ -1,6 +1,6 @@
 from genericpath import exists
 import sys
-sys.path.append(".\yolov5")
+sys.path.append("./yolov5")
 from subprocess import Popen
 
 from additional import *
@@ -18,7 +18,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 
-weights = 'weights/best_39.pt' if len(sys.argv) == 1 else sys.argv[1]
+weights = 'weights/best.pt' if len(sys.argv) == 1 else sys.argv[1]
 device_number = '' if len(sys.argv) <=2  else sys.argv[2]
 device = select_device(device_number)
 model = attempt_load(weights, map_location=device)  # load FP32 model
@@ -93,6 +93,8 @@ def detect():
     last_time = t0
     
     for path, _, im0s, vid_cap in dataset:
+        if im0s is None:
+            break
         t = time.time()
 
         # Get detections
@@ -198,7 +200,7 @@ def detect():
         if view_img:
             im_full = cv2.resize(im0s[0], scale)
 
-            cv2.imshow(p, im_full)
+            # cv2.imshow(p, im_full)
 
             save_path = "output/"+str(frameID)+".jpg"
 
@@ -235,7 +237,7 @@ def detect():
             os.system('open ' + out + ' ' + save_path)
 
     print('Done. (%.3fs)' % (time.time() - t0))
-
+    return 'Done'
 
 if __name__ == '__main__':
     app.run()
