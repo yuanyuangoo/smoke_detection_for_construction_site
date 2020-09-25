@@ -1,0 +1,13 @@
+{
+    "source" : "video.txt",
+    "output" : "output",
+    "imgsz" : 512,
+    "conf_thres" : 0.1,
+    "iou_thres" : 0.2,
+    "view_img" : true,
+    "save_txt" : false,
+    "classes" : null,
+    "agnostic_nms" : true,
+    "augment" : true,
+    "update" : false
+}

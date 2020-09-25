@@ -152,11 +152,13 @@ def get_bounding_box(source, scale_):
             source = [x.strip()
                         for x in f.read().splitlines() if len(x.strip())]
     cap = cv2.VideoCapture(source[0])
-    assert cap.isOpened(), 'Failed to open %s'
+    print(source[0])
+    assert cap.isOpened(), 'Failed to open %s'.format(source[0])
     get_first_frame, first_frame = cap.read()  # guarantee first frame
     assert get_first_frame and first_frame is not None, 'Failed to get first frame'
     ori_img = first_frame.copy()
     images_size = ori_img.shape[:2]
+    refPt='Not defined'
 
     # get_bounding_from_file = True
     if not os.path.exists('bounding_box.txt') or os.stat("bounding_box.txt").st_size == 0:

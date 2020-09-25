@@ -1,3 +1,4 @@
+from genericpath import exists
 import sys
 sys.path.append(".\yolov5")
 from subprocess import Popen
@@ -13,16 +14,40 @@ from yolov5.models.experimental import attempt_load
 from yolov5.utils.datasets import LoadStreams
 from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box, strip_optimizer
 from yolov5.utils.torch_utils import select_device
+from flask import Flask, request
+app = Flask(__name__)
+
+
+weights = 'weights/best_39.pt' if len(sys.argv) == 1 else sys.argv[1]
+device_number = '' if len(sys.argv) <=2  else sys.argv[2]
+device = select_device(device_number)
+model = attempt_load(weights, map_location=device)  # load FP32 model
+
+@app.route('/detect', methods=['GET', 'POST'])
+def detect():
+    save_img=False
+    form_data = request.json
+    print(form_data)
+
+    source = form_data['source']
+    out = form_data['output']
+    imgsz = form_data['imgsz']
+    conf_thres = form_data['conf_thres']
+    iou_thres = form_data['iou_thres']
+    view_img = form_data['view_img']
+    save_txt = form_data['save_txt']
+    classes = form_data['classes']
+    agnostic_nms = form_data['agnostic_nms']
+    augment = form_data['augment']
+    update = form_data['update']
+    if update:
+        with torch.no_grad():
+            strip_optimizer(weights)
 
 
 
-
-def detect(save_img=False):
-    out, source, weights, view_img, save_txt, imgsz = \
-        opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
-    device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
     # Initialize
     if os.path.exists(out):
@@ -38,7 +63,6 @@ def detect(save_img=False):
     dataset = LoadStreams(source, img_size=imgsz)
 
     # Initialize model
-    model = attempt_load(weights, map_location=device)  # load FP32 model
     imgsz = check_img_size(imgsz, s=model.stride.max())  # check img_size
     # Eval mode
     model.to(device).eval()
@@ -96,13 +120,16 @@ def detect(save_img=False):
             #     cv2.imwrite('tmp/'+str(idx)+'_f'+str(frameID)+'.jpg', tmp)
 
             if len(input_splits):
-                preds.append(model(input_splits, augment=opt.augment)[0])
+                preds.append(model(input_splits, augment=augment)[0])
         preds = torch.cat(preds)
-        if opt.half:
+        if half:
             preds = preds.float()
-
         # Apply NMS
-        preds = non_max_suppression(preds, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        preds = non_max_suppression(preds, conf_thres, iou_thres, classes=classes, agnostic=agnostic_nms)
+        # print(preds)
+
+        # exit()
+
         frameID += 1
         # Apply Classifier
         if classify:
@@ -199,7 +226,7 @@ def detect(save_img=False):
                     fps = vid_cap.get(cv2.CAP_PROP_FPS)
                     w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                     h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*opt.fourcc), fps, (w, h))
+                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*fourcc), fps, (w, h))
                 vid_writer.write(im0)
 
     if save_txt or save_img:
@@ -210,31 +237,5 @@ def detect(save_img=False):
     print('Done. (%.3fs)' % (time.time() - t0))
 
 
-
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weights/best.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='video.txt', help='source')  # input file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='./output', help='output folder')  # output folder
-    parser.add_argument('--img-size', type=int, default=512, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.1, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.2, help='IOU threshold for NMS')
-    parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
-    parser.add_argument('--half', default=True, action='store_true', help='half precision FP16 inference')
-    parser.add_argument('--device', default='0', help='device id (i.e. 0 or 0,1) or cpu')
-    parser.add_argument('--view-img', action='store_true', help='display results')
-    parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
-    parser.add_argument('--classes', nargs='+', type=int, help='filter by class')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
-    parser.add_argument('--augment', default=False,action='store_true', help='augmented inference')
-    parser.add_argument('--update', default=False, action='store_true', help='update all models')
-    opt = parser.parse_args()
-    print(opt)
-
-    with torch.no_grad():
-        if opt.update:  # update all models (to fix SourceChangeWarning)
-            # for opt.weights in ['yolov5s.pt', 'yolov5m.pt', 'yolov5l.pt', 'yolov5x.pt', 'yolov3-spp.pt']:
-            # detect()
-            strip_optimizer(opt.weights)
-        else:
-            detect()
+    app.run()
