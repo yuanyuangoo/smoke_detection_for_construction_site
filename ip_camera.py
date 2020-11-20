@@ -1,20 +1,21 @@
+from additional import get_bounding_box, get_mask, split_with_mask, reverse_coords
 import sys
 sys.path.append("./yolov5")
-
-from subprocess import Popen
-from additional import *
+from yolov5.utils.torch_utils import select_device, load_classifier, time_synchronized
+from yolov5.utils.plots import plot_one_box
+from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, scale_coords, xyxy2xywh, \
+    strip_optimizer, set_logging, increment_path
+from yolov5.utils.datasets import LoadStreams, LoadImages
+from yolov5.models.experimental import attempt_load
+from numpy import random
+import torch.backends.cudnn as cudnn
 import torch
-from sys import platform
+import cv2
+from pathlib import Path
+import time
+import argparse, os
 from argparse import ArgumentParser
 import shutil
-from pathlib import Path
-
-from yolov5.models.experimental import attempt_load
-from yolov5.utils.datasets import LoadStreams
-from yolov5.utils.general import check_img_size, non_max_suppression, apply_classifier, plot_one_box, strip_optimizer
-from yolov5.utils.torch_utils import select_device
-
-
 
 def detect(save_img=False):
     out, source, weights, view_img, save_txt, imgsz = \
@@ -176,9 +177,8 @@ def detect(save_img=False):
 
             if n_all > 0:
                 cv2.imwrite(save_path, im_full)
-            if sent_event:
-                Popen([r"python.exe",  "send.py", r'--img_path', save_path], shell=True)
-                # exit()
+            # if sent_event:
+            #     Popen([r"C:\\Users\\yuany\\Anaconda3\\envs\\py2\\python.exe",  "utils\\send.py", r'--img_path', save_path], shell=True)
             if cv2.waitKey(1) == ord('q'):  # q to quit
                 raise StopIteration
 
@@ -212,11 +212,11 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weights/best.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='../yolov5/runs/train/exp/weights/best.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='video.txt', help='source')  # input file/folder, 0 for webcam
     parser.add_argument('--output', type=str, default='./output', help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=512, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.2, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.2, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
     parser.add_argument('--half', default=True, action='store_true', help='half precision FP16 inference')

@@ -1,5 +1,5 @@
 {
-    "source" : "video.txt",
+    "source" : "rtsp.txt",
     "output" : "output",
     "imgsz" : 512,
     "conf_thres" : 0.5,
